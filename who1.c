@@ -12,7 +12,7 @@
 #include<unistd.h>
 #include<stdlib.h>
 
-
+// comperate!!!!!!!!!!!!!11
 void showtime(long timeval);
 void show_info(struct utmp * utbufp);
 int main()
