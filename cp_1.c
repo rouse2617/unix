@@ -3,7 +3,8 @@
 	> Author:hrp 
 	> Mail: 
 	> Created Time: 2021年03月22日 星期一 04时52分24秒
-
+add -i command
+可以复制到制定的目录里
 
  ************************************************************************/
 
@@ -12,6 +13,11 @@
 #include<fcntl.h>
 #include<stdlib.h>
 #include<unistd.h>
+#include<dirent.h>
+
+
+
+#include<sys/stat.h>
 
 #include<string.h>
 #define BUFFERSIZE 4096
@@ -37,12 +43,15 @@ char buf[BUFFERSIZE];
          int c;
          if(access(av[3],F_OK)==0 )
          {
-	        printf("文件已经存在，是否覆盖 y/n   : ");
-	        if( (c = getchar()) == 'y')
-	        {
-		        printf("yes");
-        	    read_write(av[2],av[3]);	
-	        }
+           
+	    printf("文件已经存在，是否覆盖 y/n   : ");
+    //    c= getchar();
+ 	//    printf("%c",c);
+	    if( (c = getchar()) == 'y')
+	      {
+	    	printf("yes");
+        	read_write(av[2],av[3]);	
+	      }
             return -1;
          }
      }
@@ -58,20 +67,42 @@ void oops(char * s1,char *s2)
 void read_write(char *src,char *dst)
 {
 		
-     int in_fd,out_fd,n_chars;
+     
+	DIR		*dir_ptr;		/* the directory */
+	struct dirent	*direntp;		/* each entry	 */
+    struct stat info;
+    int in_fd,out_fd,n_chars;
      if((in_fd = open(src,O_RDONLY)) == -1)
      {
         oops("read error\n ",src); 
      }
 	
-     if((out_fd = creat(dst,COPYMODE)) == -1)
-     {
-        oops("write error!!!! \n  ",dst);
-     }
+    if(stat(dst,&info) == -1)
+    {
+        perror(dst);
 
+    }  
+    
+    if(S_ISDIR(info.st_mode))  //判断是否为文件夹
+    {
+        
+        strcat(dst,src);
+    //    printf("%s\n",dst);
+        if((out_fd = creat(dst,COPYMODE)) == -1)
+        {
+            oops("write error!!!! \n  ",dst);
+
+        }
+    }
+    else if((out_fd = creat(dst,COPYMODE)) == -1)
+    {
+        oops("write error!!!! \n  ",dst);
+
+    }
+     
      while((n_chars = read(in_fd,buf,BUFFERSIZE)) > 0)
         if(write(out_fd,buf,n_chars) != n_chars)
-            oops("write Error to \n ",dst);
+           oops("write Error to \n ",dst);
 
      if(n_chars == -1)
         oops("Read error from ",src);
